@@ -1,0 +1,82 @@
+server:
+  servlet:
+    context-path: /miniService
+    encoding:
+      force: true
+      enabled: true
+      charset: UTF-8
+  port: 9700
+
+service.url:
+  authentication-service: http://127.0.0.1:9000
+  db:
+    url: jdbc:oracle:thin:@127.0.0.1:1521:xe
+    user: MINI_PROJECT
+    password: '1234'
+
+logging:
+  config: classpath:logback-local.xml
+
+security:
+  oauth2:
+    resource:
+      token-info-uri: ${service.url.authentication-service}/auth/oauth/check_token
+      preferTokenInfo: false
+    client:
+      client-id: fooClientIdPassword
+      client-secret: secret
+      access-token-uri: ${service.url.authentication-service}/auth/oauth/token
+      user-authorization-uri: ${service.url.authentication-service}/auth/oauth/authorize
+
+auth-service:
+  revoke.url: ${service.url.authentication-service}/auth/password/user/revoke
+
+spring:
+  profiles.active: test
+  main:
+    banner-mode: "OFF"
+    allow-bean-definition-overriding: true
+
+  datasource:
+    type: com.zaxxer.hikari.HikariDataSource
+    url: ${service.url.db.url}
+    username: ${service.url.db.user}
+    password: ${service.url.db.password}
+    hikari:
+      auto-commit: false
+      idle-timeout: 10000
+      minimum-idle: 1
+      maximum-pool-size: 20
+      pool-name: NSFWSPool
+      data-source-properties:
+        cachePrepStmts: true
+        prepStmtCacheSize: 250
+        prepStmtCacheSqlLimit: 2048
+        useServerPrepStmts: true
+  jpa:
+    show-sql: false
+    database-platform: org.hibernate.dialect.Oracle10gDialect
+    properties:
+      hibernate:
+        default_schema : ${service.url.db.user}
+        hibernate.dialect: com.nsf.ws.OracleDialectOverrider
+        hibernate.id.new_generator_mappings: false
+        hibernate.connection.provider_disables_autocommit: true
+        hibernate.cache.use_query_cache: false
+        hibernate.generate_statistics: false
+        hibernate.enable_lazy_load_no_trans: true
+      jadira:
+        usertype.autoRegisterUserTypes: true
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+---
+spring:
+  profiles: test
+  devtools:
+    restart:
+      enabled: false
+    livereload:
+      enabled: false
+
